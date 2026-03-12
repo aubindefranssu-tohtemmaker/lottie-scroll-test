@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lottie Scroll Control Demo</title>
+
+  <!-- Web component dotlottie -->
+  <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js"></script>
+
+  <style>
+    /* Page avec de la hauteur pour permettre le scroll */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 200vh; /* augmente si tu veux plus de granularité */
+      background: #f7f7f8;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    /* Conteneur sticky = l’anim reste visible pendant le scroll */
+    .stage {
+      position: sticky;
+      top: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+    dotlottie-wc {
+      width: min(60vw, 600px);
+      height: min(60vw, 600px);
+    }
+  </style>
+</head>
+<body>
+
+  <section class="stage">
+    <!-- IMPORTANT : pas de loop, pas d’autoplay → contrôle 100% manuel -->
+    <dotlottie-wc
+      id="myLottie"
+      src="https://lottie.host/efccb87b-3a68-40b3-a971-aeb8a8d55d77/YuYgCZedvC.lottie"
+      speed="1"
+      loop="false"
+      autoplay="false"
+      mode="forward"
+    ></dotlottie-wc>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const el = document.getElementById("myLottie");
+      const lottie = await el.getLottie(); // attend le chargement du player
+
+      // Calcule la progression du scroll de la page (0 → 100 %)
+      function updateByScroll() {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const ratio = maxScroll > 0 ? (window.scrollY / maxScroll) : 0;
+        const percent = Math.max(0, Math.min(100, ratio * 100));
+        lottie.seek(percent + "%");
+      }
+
+      // Première synchro + écouteur
+      updateByScroll();
+      window.addEventListener("scroll", updateByScroll, { passive: true });
+
+      // Option : prise en charge de la molette sur des pages peu longues
+      // → increments fins même si la page n’est pas très haute
+      let wheelAccum = 0; // pixels cumulés
+      window.addEventListener("wheel", (e) => {
+        // Ajuste la sensibilité si besoin
+        wheelAccum += e.deltaY;
+        // convertit un petit delta en progression
+        const maxScroll = 5000; // "scroll virtuel" pour contrôler la sensibilité
+        const ratio = Math.max(0, Math.min(1, (window.scrollY + wheelAccum) / maxScroll));
+        const percent = ratio * 100;
+        lottie.seek(percent + "%");
+      }, { passive: true });
+    });
+  </script>
+</body>
+</html>
