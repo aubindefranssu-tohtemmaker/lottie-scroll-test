@@ -2,24 +2,22 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Lottie – Scroll control</title>
+  <title>Lottie – Baseline</title>
 
-  <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js"></script>
+  <!-- Web Component DotLottie (version stable) -->
+  <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@1/dist/dotlottie-wc.js"></script>
 
   <style>
     html, body {
       margin: 0;
-      height: 200vh;
+      padding: 0;
       background: #f5f5f7;
-    }
-    .wrapper {
-      position: sticky;
-      top: 0;
-      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
     }
+
     dotlottie-wc {
       width: 500px;
       height: 500px;
@@ -29,37 +27,13 @@
 
 <body>
 
-  <div class="wrapper">
-    <dotlottie-wc
-      id="myLottie"
-      src="./anim.json"
-      autoplay="false"
-      loop="false">
-    </dotlottie-wc>
-  </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const el = document.getElementById("myLottie");
-
-      const anim = await el.getLottie();  // <<< fonctionne enfin car le module est chargé
-      anim.stop();
-      anim.loop = false;
-
-      let pos = 0;
-      const FACTEUR = 6;
-
-      window.addEventListener("wheel", (e) => {
-        pos += (e.deltaY * FACTEUR) / 100;
-        pos = Math.min(100, Math.max(0, pos));
-        anim.seek(pos + "%");
-
-        if (pos >= 100) {
-          anim.goToAndStop(anim.totalFrames, true);
-        }
-      }, { passive: true });
-    });
-  </script>
+  <!-- Animation Lottie SANS autoplay, SANS JS -->
+  <dotlottie-wc
+    id="myLottie"
+    src="./anim.json"
+    autoplay="false"
+    loop="false">
+  </dotlottie-wc>
 
 </body>
 </html>
