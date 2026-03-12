@@ -2,16 +2,15 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Lottie Scroll Control</title>
+  <title>Lottie Scroll Control Demo</title>
 
-  <!-- IMPORT DU WEB COMPONENT (avec <script>) -->
   <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js" type="module"></script>
 
   <style>
-    body {
+    html, body {
       margin: 0;
       height: 200vh;
-      background: #f4f4f4;
+      background: #f5f5f7;
     }
     .wrapper {
       position: sticky;
@@ -43,7 +42,6 @@
       const el = document.getElementById("myLottie");
       const anim = await el.getLottie();
 
-      // Stop autoplay
       anim.stop();
       anim.loop = false;
 
@@ -54,10 +52,7 @@
         pos += (e.deltaY * FACTEUR) / 100;
         pos = Math.max(0, Math.min(100, pos));
         anim.seek(pos + "%");
-
-        if (pos >= 100) {
-          anim.goToAndStop(anim.totalFrames, true);
-        }
+        if (pos >= 100) anim.goToAndStop(anim.totalFrames, true);
       }, { passive: true });
     });
   </script>
