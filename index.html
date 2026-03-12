@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Démo Lottie - Contrôle à la molette</title>
+
+  <!-- Web Component DotLottie : import correct, en module -->
+  <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js" type="module"></script>
+
+  <style>
+    /* Grande hauteur pour permettre un scroll confortable (si tu veux) */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 200vh;        /* ↑ augmente pour plus de “granularité” */
+      background: #f5f5f7;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    /* L'animation reste centrée pendant le défilement */
+    .stage {
+      position: sticky;
+      top: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+    dotlottie-wc {
+      width: min(70vw, 600px);
+      height: min(70vw, 600px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <section class="stage">
+    <!-- IMPORTANT : id présent + autoplay et loop à false -->
+    <dotlottie-wc
+      id="myLottie"
+      src="./anim.json"
+      autoplay="false"
+      loop="false"
+      style="width: 500px; height: 500px;">
+    </dotlottie-wc>
+  </section>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const el = document.getElementById("myLottie");
+      if (!el) {
+        console.error("Impossible de trouver #myLottie");
+        return;
+      }
+
+      // On récupère l'instance Lottie interne au web component
+      const anim = await el.getLottie();
+
+      // Sécurité : on s'assure que rien ne joue tout seul
+      anim.stop();
+      anim.loop = false;
+
+      // Position cible (0 → 100 %) contrôlée par la molette
+      let pos = 0;
+
+      // Réglage de sensibilité de la molette :
+      // ↑ augmente pour parcourir l’anim plus vite / ↓ pour plus lent
+      const FACTEUR = 8;   // ex. 4 = doux | 6 = standard | 8–12 = rapide
+
+      // Contrôle à la molette (avance/recul)
+      window.addEventListener("wheel", (e) => {
+        // deltaY > 0 = scroll bas → avance | deltaY < 0 = recule
+        pos += (e.deltaY * FACTEUR) / 100;
+
+        // Clamp entre 0 et 100 %
+        if (pos < 0) pos = 0;
+        if (pos > 100) pos = 100;
+
+        // Va à la frame correspondante (en % de progression)
+        anim.seek(pos + "%");
+
+        // Anti-boucle : si on atteint 100 %, on stoppe sur la dernière frame
+        if (pos >= 100) {
+          anim.goToAndStop(anim.totalFrames, true);
+        }
+      }, { passive: true });
+
+      // Optionnel : synchroniser aussi avec la progression de page (décommenter si souhaité)
+      /*
+      function syncWithScroll() {
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const ratio = maxScroll > 0 ? (window.scrollY / maxScroll) : 0;
+        const percent = Math.max(0, Math.min(100, ratio * 100));
+        pos = percent;                 // on maintient pos alignée au scroll
+        anim.seek(percent + "%");
+      }
+      window.addEventListener("scroll", syncWithScroll, { passive: true });
+      syncWithScroll();
+      */
+    });
+  </script>
+
+</body>
+</html>
