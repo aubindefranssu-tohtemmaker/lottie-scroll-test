@@ -2,67 +2,77 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Lottie Scroll Control Demo</title>
+  <title>Démo Lottie - Contrôle à la molette</title>
 
-  <!-- Import du Web Component DotLottie -->
+  <!-- Web Component DotLottie : import correct, en module -->
   <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js" type="module"></script>
 
   <style>
-    body {
+    /* Grande hauteur pour permettre un scroll confortable (si tu veux) */
+    html, body {
       margin: 0;
-      height: 200vh;
-      background: #f4f4f4;
+      padding: 0;
+      height: 200vh;        /* ↑ augmente pour plus de “granularité” */
+      background: #f5f5f7;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-    .wrapper {
+    /* L'animation reste centrée pendant le défilement */
+    .stage {
       position: sticky;
       top: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
     }
     dotlottie-wc {
-      width: 500px;
-      height: 500px;
+      width: min(70vw, 600px);
+      height: min(70vw, 600px);
     }
   </style>
 </head>
 
 <body>
 
-  <div class="wrapper">
-    <dotlottie-wc 
-        id="myLottie"
-        src="https://lottie.host/efccb87b-3a68-40b3-a971-aeb8a8d55d77/YuYgCZedvC.lottie"
-        autoplay="false"
-        loop="false">
+  <section class="stage">
+    <!-- IMPORTANT : id présent + autoplay et loop à false -->
+    <dotlottie-wc
+      id="myLottie"
+      src="./anim.json"
+      autoplay="false"
+      loop="false"
+      style="width: 500px; height: 500px;">
     </dotlottie-wc>
-  </div>
+  </section>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
       const el = document.getElementById("myLottie");
+      if (!el) {
+        console.error("Impossible de trouver #myLottie");
+        return;
+      }
 
+      // On récupère l'instance Lottie interne au web component
       const anim = await el.getLottie();
 
+      // Sécurité : on s'assure que rien ne joue tout seul
       anim.stop();
       anim.loop = false;
 
+      // Position cible (0 → 100 %) contrôlée par la molette
       let pos = 0;
-      const FACTEUR = 5;
 
+      // Réglage de sensibilité de la molette :
+      // ↑ augmente pour parcourir l’anim plus vite / ↓ pour plus lent
+      const FACTEUR = 6;   // ex. 4 = doux | 6 = standard | 8–12 = rapide
+
+      // Contrôle à la molette (avance/recul)
       window.addEventListener("wheel", (e) => {
+        // deltaY > 0 = scroll bas → avance | deltaY < 0 = recule
         pos += (e.deltaY * FACTEUR) / 100;
-        pos = Math.max(0, Math.min(100, pos));
 
-        anim.seek(pos + "%");
+        // Clamp entre 0 et 100 %
+        if (pos < 0) pos = 0;
+        if (pos > 100) pos = 100;
 
-        if (pos >= 100) {
-          anim.goToAndStop(anim.totalFrames, true);
-        }
-      }, { passive: true });
-    });
-  </script>
-
-</body>
-</html>
+        // Va à la frame correspondante (en % de progression)
