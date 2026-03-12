@@ -4,76 +4,84 @@
   <meta charset="UTF-8" />
   <title>Lottie Scroll Control Demo</title>
 
-  <!-- Web component dotlottie -->
-  <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js"></script>
+  <!-- Import du web component DotLottie -->
+  <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js" type="module"></script>
 
   <style>
-    /* Page avec de la hauteur pour permettre le scroll */
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      height: 200vh; /* augmente si tu veux plus de granularité */
-      background: #f7f7f8;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      height: 200vh; /* permet d'avoir une zone de scroll suffisante */
+      background: #f4f4f4;
     }
-    /* Conteneur sticky = l’anim reste visible pendant le scroll */
-    .stage {
+
+    .wrapper {
       position: sticky;
       top: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
+
     dotlottie-wc {
-      width: min(60vw, 600px);
-      height: min(60vw, 600px);
+      width: 500px;
+      height: 500px;
     }
   </style>
 </head>
+
 <body>
 
-  <section class="stage">
-    <!-- IMPORTANT : pas de loop, pas d’autoplay → contrôle 100% manuel -->
-    <dotlottie-wc
+  <div class="wrapper">
+    <dotlottie-wc 
       id="myLottie"
       src="https://lottie.host/efccb87b-3a68-40b3-a971-aeb8a8d55d77/YuYgCZedvC.lottie"
-      speed="1"
-      loop="false"
       autoplay="false"
-      mode="forward"
-    ></dotlottie-wc>
-  </section>
+      loop="false"
+      speed="1">
+    </dotlottie-wc>
+  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
+
       const el = document.getElementById("myLottie");
-      const lottie = await el.getLottie(); // attend le chargement du player
 
-      // Calcule la progression du scroll de la page (0 → 100 %)
-      function updateByScroll() {
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-        const ratio = maxScroll > 0 ? (window.scrollY / maxScroll) : 0;
-        const percent = Math.max(0, Math.min(100, ratio * 100));
-        lottie.seek(percent + "%");
-      }
+      // Attente du player Lottie interne
+      const anim = await el.getLottie();
 
-      // Première synchro + écouteur
-      updateByScroll();
-      window.addEventListener("scroll", updateByScroll, { passive: true });
+      // Désactivation totale autoplay
+      anim.stop();
+      anim.loop = false;
 
-      // Option : prise en charge de la molette sur des pages peu longues
-      // → increments fins même si la page n’est pas très haute
-      let wheelAccum = 0; // pixels cumulés
+      // Valeur de progression (0 → 100 %)
+      let pos = 0;
+
+      // Coefficient d'accélération du scroll :
+      // augmente pour parcourir l’animation plus vite
+      const FACTEUR = 4.5;  // Ajuste ici selon feeling
+
       window.addEventListener("wheel", (e) => {
-        // Ajuste la sensibilité si besoin
-        wheelAccum += e.deltaY;
-        // convertit un petit delta en progression
-        const maxScroll = 5000; // "scroll virtuel" pour contrôler la sensibilité
-        const ratio = Math.max(0, Math.min(1, (window.scrollY + wheelAccum) / maxScroll));
-        const percent = ratio * 100;
-        lottie.seek(percent + "%");
+
+        // deltaY positif = scroll bas → avance animation
+        // deltaY négatif = scroll haut → recule animation
+        pos += (e.deltaY * FACTEUR) / 100;
+
+        // Clamp 0–100 %
+        pos = Math.min(100, Math.max(0, pos));
+
+        // Aller à la position dans l'anim
+        anim.seek(pos + "%");
+
+        // Sécurité anti-loop → stop frame finale
+        if (pos >= 100) {
+          anim.goToAndStop(anim.totalFrames, true);
+        }
+
       }, { passive: true });
+
     });
   </script>
+
 </body>
 </html>
