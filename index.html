@@ -5,7 +5,7 @@
   <title>Lottie Scroll Control Demo</title>
 
   <!-- Import du Web Component DotLottie -->
-  https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.7.1/dist/dotlottie-wc.js" type="module"></script>
 
   <style>
     body {
@@ -31,9 +31,11 @@
 <body>
 
   <div class="wrapper">
-    https://lottie.host/efccb87b-3a68-40b3-a971-aeb8a8d55d77/YuYgCZedvC.lottie"
-         autoplay="false"
-         loop="false">
+    <dotlottie-wc 
+        id="myLottie"
+        src="https://lottie.host/efccb87b-3a68-40b3-a971-aeb8a8d55d77/YuYgCZedvC.lottie"
+        autoplay="false"
+        loop="false">
     </dotlottie-wc>
   </div>
 
@@ -41,24 +43,16 @@
     document.addEventListener("DOMContentLoaded", async () => {
       const el = document.getElementById("myLottie");
 
-      // ⚠️ si el vaut null → rien ne marchera
-      if (!el) {
-        console.error("ERREUR : impossible de trouver #myLottie");
-        return;
-      }
-
       const anim = await el.getLottie();
 
-      // Désactivation totale de l'autoplay
       anim.stop();
       anim.loop = false;
 
       let pos = 0;
-      const FACTEUR = 5; // accélération du scroll
+      const FACTEUR = 5;
 
       window.addEventListener("wheel", (e) => {
         pos += (e.deltaY * FACTEUR) / 100;
-
         pos = Math.max(0, Math.min(100, pos));
 
         anim.seek(pos + "%");
